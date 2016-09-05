@@ -21,5 +21,8 @@
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-highlighter:5.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-join:5.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-memory:5.4.1" level="project" />
+    <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.7" level="project" />
+    <orderEntry type="library" name="Maven: com.chenlb.mmseg4j:mmseg4j-core:1.9.1" level="project" />
+    <orderEntry type="library" name="Maven: com.chenlb.mmseg4j:mmseg4j-analysis:1.9.1" level="project" />
   </component>
 </module>
