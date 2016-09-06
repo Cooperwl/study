@@ -1,10 +1,7 @@
 package com.study.mongo.demo;
 
 
-import com.mongodb.AggregationOptions;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.WriteConcern;
+import com.mongodb.*;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -56,6 +53,7 @@ public class MongoConnectionFactory {
         options.writeConcern(WriteConcern.SAFE);//
         options.build();
     }
+
 
     /**
      * 获取DB实例 - 指定DB

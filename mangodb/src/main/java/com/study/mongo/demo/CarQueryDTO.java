@@ -33,8 +33,10 @@ public class CarQueryDTO implements Serializable {
     private String stationAddress;// 网点地址
     private Double longitude;// 经度
     private Double latitude;// 纬度
+    private Location location;//位置
     private Double baiduLongitude;// 百度经度
     private Double baiduLatitude;// 百度纬度
+    private String status;//状态
     private String transmission;// 手动/自动
     private Double distance;// 距离
     private String carPic;// 图片地址
@@ -61,13 +63,12 @@ public class CarQueryDTO implements Serializable {
     private String fuelPercentage;//燃油剩余百分比
     private String priceTemplateId;// 价格模板id
     private Integer priceIdFlag;// 价格模板标示 1：门店；2：车辆
-    private Location loc;//位置
 
 
     public CarQueryDTO(Double latitude, Double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
-        this.loc = new Location("Point", new Double[]{longitude, latitude});
+        this.location = new Location("Point", new Double[]{longitude, latitude});
         this.carId = RandomStringUtils.randomNumeric(10);
         this.carName = "测试用";
         this.brandId = RandomStringUtils.randomNumeric(10);
@@ -109,12 +110,20 @@ public class CarQueryDTO implements Serializable {
         this.priceIdFlag = 0;// 价格模板标示 1：门店；2：车辆
     }
 
-    public Location getLoc() {
-        return loc;
+    public String getStatus() {
+        return status;
     }
 
-    public void setLoc(Location loc) {
-        this.loc = loc;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public String getCarId() {

@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/lucene/lucene.iml" filepath="$PROJECT_DIR$/lucene/lucene.iml" />
       <module fileurl="file://$PROJECT_DIR$/mangodb/mangodb.iml" filepath="$PROJECT_DIR$/mangodb/mangodb.iml" />
       <module fileurl="file://$PROJECT_DIR$/solr/solr.iml" filepath="$PROJECT_DIR$/solr/solr.iml" />
+      <module fileurl="file://$PROJECT_DIR$/spring-mongo/spring-mongo.iml" filepath="$PROJECT_DIR$/spring-mongo/spring-mongo.iml" />
     </modules>
   </component>
 </project>
