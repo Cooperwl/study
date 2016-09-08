@@ -46,7 +46,7 @@
       <module name="coderefactor" target="1.5" />
       <module name="common" target="1.5" />
       <module name="lucene" target="1.5" />
-      <module name="mangodb" target="1.6" />
+      <module name="mangodb" target="1.7" />
       <module name="solr" target="1.5" />
       <module name="spring-mongo" target="1.7" />
     </bytecodeTargetLevel>

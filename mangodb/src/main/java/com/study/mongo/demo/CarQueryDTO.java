@@ -65,11 +65,11 @@ public class CarQueryDTO implements Serializable {
     private Integer priceIdFlag;// 价格模板标示 1：门店；2：车辆
 
 
-    public CarQueryDTO(Double latitude, Double longitude) {
+    public CarQueryDTO(String carId, double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.location = new Location("Point", new Double[]{longitude, latitude});
-        this.carId = RandomStringUtils.randomNumeric(10);
+        this.carId = carId;
         this.carName = "测试用";
         this.brandId = RandomStringUtils.randomNumeric(10);
         this.brandName = "测试用";

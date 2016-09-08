@@ -3,16 +3,18 @@
  */
 package com.study.mongo.demo;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.mongodb.client.model.geojson.Point;
 import org.bson.Document;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 /**
@@ -28,9 +30,17 @@ public class LongLifeRemoteMongoCache {
     
     public LongLifeRemoteMongoCache(MongoConnectionFactory factory, String dbName) {
         this.factory = factory;
+        this.factory.init();
         this.db = this.factory.getDB(dbName);
     }
-
+    
+    /**
+     * 清空集合
+     * @param collectionName    集合名称
+     */
+    public void clearCollection(String collectionName){
+        db.getCollection(collectionName).drop();
+    }
     
     /**
      * 创建数据索引
@@ -45,7 +55,7 @@ public class LongLifeRemoteMongoCache {
      * @param collectionName 集合名称
      * @param dbObject 需要保存的对象
      */
-    public void save(String collectionName, Document dbObject) {
+    public synchronized void save(String collectionName, Document dbObject) {
         db.getCollection(collectionName).insertOne(dbObject);
     }
     
@@ -58,7 +68,7 @@ public class LongLifeRemoteMongoCache {
      * @param multi 是否是多结果操作
      * @return
      */
-    public UpdateResult update(String collection, Document query, Document update, boolean upsert, boolean multi) {
+    public synchronized UpdateResult update(String collection, Document query, Document update, boolean upsert, boolean multi) {
         UpdateOptions updateOptions = new UpdateOptions();
         updateOptions.upsert(upsert);
         if (multi) {
@@ -67,12 +77,22 @@ public class LongLifeRemoteMongoCache {
             return db.getCollection(collection).updateOne(query, update, updateOptions);
         }
     }
+    
+    /**
+     * 根据条件删除数据
+     * @param collectionName    集合名称
+     * @param filter    过滤条件
+     * @return
+     */
+    public synchronized DeleteResult remove(String collectionName, Document filter){
+        return db.getCollection(collectionName).deleteMany(filter);
+    }
     /** 根据过滤条件统计数量
      * @param collection 集合名称
      * @param query 查询条件
      * @return
      */
-    public Long count(String collection, Document query) {
+    public synchronized Long count(String collection, Document query) {
         return db.getCollection(collection).count(query);
     }
     /**
@@ -85,16 +105,17 @@ public class LongLifeRemoteMongoCache {
      * @param maxDistance 最大距离
      * @return 非NULL的list
      */
-    public List<Document> geoNear(String collectionName, String field, Point point, int limit, long maxDistance) {
+    public List<Document> geoNear(String collectionName, String field, Coords point, int limit, long maxDistance) {
         MongoCollection<Document> collection = db.getCollection(collectionName);
         BasicDBList coordinates = new BasicDBList();
-        coordinates.put(0, point.getLongitude());
-        coordinates.put(1, point.getLatitude());
+        coordinates.put(0, point.getLongitude().doubleValue());
+        coordinates.put(1, point.getLatitude().doubleValue());
 
         Document dbObject = new Document();
-        Document searchObj = new Document("$near",new Document("$geometry",new Document("coordinates",coordinates).append("type", "Point")).append("$maxDistance",maxDistance));
+        Document searchObj = new Document("$near",
+                new Document("$geometry",new Document("coordinates",coordinates).append("type", "Point"))
+                .append("$maxDistance",maxDistance));
         dbObject.put(field,searchObj);
-        System.out.println("dbObject = " + dbObject);
         final List<Document> result = new ArrayList<>();
         FindIterable<Document> documents = collection.find(dbObject);
         documents.limit(limit);

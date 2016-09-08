@@ -2,21 +2,14 @@ package com.study.mongo.demo;
 
 import com.google.gson.Gson;
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
-import com.mongodb.DBObject;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.util.JSON;
-import org.bson.BSON;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by wangliang on 2016/9/4.
@@ -24,108 +17,61 @@ import java.util.List;
 public class CarQueryDemo {
 
     private static MongoConnectionFactory factory = new MongoConnectionFactory("localhost",27017,"");
-    private static MongoDatabase database;
-    private static MongoCollection<Document> cars;
+    private static LongLifeRemoteMongoCache mongoCache;
 
-    static DecimalFormat myformat=new DecimalFormat("0.0000");
     public static void main(String[] args) {
-        factory.init();
-        database = factory.getDB("query");
-        cars = database.getCollection("cars");
-//        insertMany();
-//        createIndex();
-//        List<CarQueryDTO> carResult = near("location", 108.86, 34.29, 5000);
-//        System.out.println(carResult.size());
-//        findAvaliableCars();
-        near("location", 108.86, 34.29, 5000);
-    }
+        mongoCache = new LongLifeRemoteMongoCache(factory,"cars");
+//        List<CarQueryDTO> data = getData();
+//        for (CarQueryDTO car:  data){
+//            Document carDoc = Document.parse(new Gson().toJson(car));
+//            mongoCache.save("cars",carDoc);
+//        }
+//        mongoCache.createIndex("cars",new Document("location","2dsphere"));
 
+//        mongoCache.clearCollection("cars");
+//        Coords point = new Coords();
+//        point.setLatitude(39.84484);
+//        point.setLongitude(116.50413);
+//        List<Document> near = mongoCache.geoNear("cars", "location", point, 100, 1000);
+//        String json = near.get(0).toJson();
+//        CarQueryDTO dto = new Gson().fromJson(json,CarQueryDTO.class);
+////        System.out.println(dto.getCarId());
+//
+//        dto.setLongitude(116D);
+//        dto.setLatitude(39D);
+//        dto.setLocation(new Location("Point", new Double[]{116D,39D}));
+//        BasicDBList coordinates = new BasicDBList();
+//        coordinates.put(0, 116D);
+//        coordinates.put(1, 39D);
+//        Document update = new Document("$set",
+//                new Document("longitude",116D)
+//                        .append("latitude",39D)
+//                        .append("location",new Document("type","Point").append("coordinates",coordinates)));
+//        UpdateResult updateResult = mongoCache.update("cars", new Document("carId", dto.getCarId()), update, true, true);
+//        System.out.println(updateResult.getModifiedCount());
 
-    public static void findAvaliableCars(){
-        Document filter = new Document("status","1");
-        FindIterable<Document> iterable = cars.find(filter);
-        iterable.forEach(new Block<Document>() {
-            @Override
-            public void apply(Document document) {
-                System.out.println(document);
-            }
-        });
-    }
-    public static List<CarQueryDTO> near(String field, double lng, double lat, int distance) {
-        final List<CarQueryDTO> result = new ArrayList<CarQueryDTO>();
-        BasicDBList coordinates = new BasicDBList();
-        coordinates.put(0, lng);
-        coordinates.put(1, lat);
-
-        Document dbObject = new Document();
-        Document searchObj = new Document("$near",new Document("$geometry",new Document("coordinates",coordinates).append("type", "Point")).append("$maxDistance",distance));
-        dbObject.put(field,searchObj);
-        System.out.println("dbObject = " + dbObject);
-
-        FindIterable<Document> documents = cars.find(dbObject);
-        documents.limit(2);
-        documents.forEach(new Block<Document>() {
-            @Override
-            public void apply(Document document) {
-                System.out.println(document);
-            }
-        });
-        return result;
-    }
-
-
-    public static List<CarQueryDTO> near2(String field, double lng, double lat, int distance) {
-        final List<CarQueryDTO> result = new ArrayList<CarQueryDTO>();
-//        db.cars.find( { loc : { $near : { $geometry : { type : "Point" , coordinates : [108.86, 34.29] } , $maxDistance : 50000} } } );
-        Document typeAndCoordiante = new Document("type", "Point").append("coordinates", new double[]{lng, lat});
-        Document geometryDocument = new Document("$geometry", typeAndCoordiante).append("$maxDistance", distance);
-
-        Document nearDocument = new Document("$near", geometryDocument);
-        FindIterable<Document> documents = cars.find(new Document(field,nearDocument));//new Document(field,nearDocument)
-
-        documents.forEach(new Block<Document>() {
-            @Override
-            public void apply(final Document document) {
-//                String json = document.toJson();
-//                Gson gson = new Gson();
-//                CarQueryDTO carQueryDTO = gson.fromJson(json, CarQueryDTO.class);
-//                result.add(carQueryDTO);
-                System.out.println(document);
-            }
-        });
-        return result;
-    }
-
-    public static void createIndex(){
-        cars.createIndex(new Document("location","2dsphere"));
-    }
-
-    public static void removeAll(){
-        cars.drop();
-    }
-
-    public static void insertMany(){
-        Gson gson=new Gson();
-        List<CarQueryDTO> data = getData();
-        List<Document> list = new ArrayList<Document>();
-        for (CarQueryDTO dto : data){
-            String json = gson.toJson(dto);
-            Document document = Document.parse(json);
-            list.add(document);
+        Coords point = new Coords();
+        point.setLatitude(39.958320);
+        point.setLongitude(116.342214);
+        List<Document> near = mongoCache.geoNear("cars", "location", point, 100, 500);
+        for (Document doc : near){
+            CarQueryDTO dto = new Gson().fromJson(doc.toJson(),CarQueryDTO.class);
+            System.out.println(dto.getLatitude()+","+dto.getLongitude());
         }
-        cars.insertMany(list);
     }
 
     public static List<CarQueryDTO> getData(){
         List<CarQueryDTO> list = new ArrayList<CarQueryDTO>();
         int statas = 0;
-        BigDecimal latitude = new BigDecimal(34.271);
-        BigDecimal longitude = new BigDecimal(108.849);
-        for (int i = 0; i < 10; i++) {
-            latitude = latitude.add(BigDecimal.valueOf(0.01));
-            longitude = longitude.add(BigDecimal.valueOf(0.01));
-            System.out.println("lng:"+longitude+", lat:"+latitude);
-            CarQueryDTO carQuery = new CarQueryDTO(Double.valueOf(myformat.format(latitude)),Double.valueOf(myformat.format(longitude)));
+        double latitude;
+        double longitude;
+        Random random = new Random();
+        int carId = 10000;
+        for (int i = 0; i < 10; i++){
+            latitude = 39 + Double.valueOf(random.nextInt(107852-79505) + 79505) / 100000;
+            longitude = 116 + Double.valueOf(random.nextInt(58870-24001) + 24001) / 100000;
+            System.out.println(latitude+","+longitude);
+            CarQueryDTO carQuery = new CarQueryDTO("car_"+ (carId++) ,latitude,longitude);
             carQuery.setStatus(statas+"");
             list.add(carQuery);
             if (statas == 0){
